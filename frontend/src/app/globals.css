@@ -83,19 +83,20 @@ body {
 }
 
 /* Subtle Warm Grid Texture */
-/* Subtle Warm Grid Texture - Forced Always Visible */
+/* Light Mode: Soft, subtle warm grid */
 .bg-brand-grid {
-  background-size: 28px 28px !important;
+  background-size: 28px 28px;
   background-image: 
-    linear-gradient(to right, rgba(215, 200, 180, 0.65) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(215, 200, 180, 0.65) 1px, transparent 1px) !important;
-}
-/* Custom Scrollbars */
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+    linear-gradient(to right, rgba(232, 224, 213, 0.3) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(232, 224, 213, 0.3) 1px, transparent 1px);
 }
 
+/* Dark Mode: Ultra-faint 4% opacity grid (Sleek & non-chaotic) */
+.dark .bg-brand-grid {
+  background-image: 
+    linear-gradient(to right, rgba(255, 255, 255, 0.04) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.04) 1px, transparent 1px) !important;
+}
 ::-webkit-scrollbar-track {
   background: transparent;
 }
