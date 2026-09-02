@@ -1,0 +1,55 @@
+# compiled output
+/dist
+/node_modules
+frontend/node_modules
+frontend/.next
+tsconfig.build.tsbuildinfo
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+.pnpm-debug.log*
+
+# OS
+.DS_Store
+
+# Tests
+/coverage
+/.nyc_output
+
+# IDEs and editors
+/.idea
+.project
+.classpath
+.c9/
+*.launch
+.settings/
+*.sublime-workspace
+
+# IDE - VSCode
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+# Environment – NEVER commit real secrets
+.env
+.env.test
+.env.production
+.env.local
+frontend/.env.local
+frontend/.env.production
+
+# NestJS
+.nest/
+
+# AI IDEs (Antigravity etc.)
+.agents
+.gemini
+brain
+

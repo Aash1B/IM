@@ -1,0 +1,153 @@
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "linux-musl-openssl-3.0.x"]
+}
+
+enum Role {
+  ADMIN
+  OPERATIONS
+}
+
+enum BookingStatus {
+  PENDING
+  ASSIGNED
+  MECHANIC_ON_THE_WAY
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String
+  role      Role     @default(OPERATIONS)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  notifications Notification[]
+}
+
+model Customer {
+  id        String   @id @default(uuid())
+  name      String
+  email     String   @unique
+  phone     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  vehicles  Vehicle[]
+  bookings  Booking[]
+
+  @@index([email])
+}
+
+model Vehicle {
+  id           String   @id @default(uuid())
+  make         String
+  model        String
+  year         Int
+  licensePlate String?
+  customerId   String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  customer     Customer @relation(fields: [customerId], references: [id])
+  bookings     Booking[]
+
+  @@index([customerId])
+}
+
+model Mechanic {
+  id        String   @id @default(uuid())
+  name      String
+  email     String   @unique
+  phone     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  locations MechanicLocation[]
+  bookings  Booking[]
+
+  @@index([email])
+}
+
+model MechanicLocation {
+  id         String   @id @default(uuid())
+  latitude   Float
+  longitude  Float
+  mechanicId String
+  timestamp  DateTime @default(now())
+
+  mechanic   Mechanic @relation(fields: [mechanicId], references: [id])
+
+  @@index([mechanicId])
+}
+
+model Service {
+  id          String   @id @default(uuid())
+  name        String
+  description String?
+  price       Float
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  bookings    Booking[]
+}
+
+model Booking {
+  id          String   @id @default(uuid())
+  customerId  String
+  vehicleId   String
+  serviceId   String
+  mechanicId  String?
+  status      BookingStatus @default(PENDING)
+  amount      Float
+  bookingDate DateTime
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  customer    Customer @relation(fields: [customerId], references: [id])
+  vehicle     Vehicle  @relation(fields: [vehicleId], references: [id])
+  service     Service  @relation(fields: [serviceId], references: [id])
+  mechanic    Mechanic? @relation(fields: [mechanicId], references: [id])
+  statusHistory BookingStatusHistory[]
+
+  @@index([status])
+  @@index([bookingDate])
+  @@index([customerId])
+  @@index([mechanicId])
+  @@index([serviceId])
+  @@index([createdAt])
+}
+
+model BookingStatusHistory {
+  id         String   @id @default(uuid())
+  bookingId  String
+  fromStatus BookingStatus?
+  toStatus   BookingStatus
+  changedBy  String?
+  createdAt  DateTime @default(now())
+
+  booking    Booking @relation(fields: [bookingId], references: [id])
+
+  @@index([bookingId])
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  userId    String
+  message   String
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+}

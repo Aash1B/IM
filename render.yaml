@@ -1,0 +1,54 @@
+services:
+  # ── Backend API ────────────────────────────────────────────
+  - type: web
+    name: instant-mechanic-api
+    env: node
+    plan: starter
+    region: ohio
+    nodeVersion: 22
+    buildCommand: npm install --legacy-peer-deps && npx prisma generate && npm run build
+    startCommand: node dist/main
+    envVars:
+      - key: PORT
+        value: 3000
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        sync: false
+      - key: DIRECT_URL
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true
+        value: 7d
+      - key: CORS_ALLOWED_ORIGINS
+        sync: false
+      - key: BREVO_SMTP_HOST
+        value: smtp-relay.brevo.com
+      - key: BREVO_SMTP_PORT
+        value: 587
+      - key: BREVO_SMTP_USER
+        sync: false
+      - key: BREVO_SMTP_PASSWORD
+        sync: false
+      - key: BREVO_FROM_EMAIL
+        sync: false
+
+  # ── Frontend ───────────────────────────────────────────────
+  - type: web
+    name: instant-mechanic-frontend
+    env: node
+    plan: starter
+    region: ohio
+    nodeVersion: 22
+    rootDir: frontend
+    buildCommand: npm install --legacy-peer-deps && npm run build
+    startCommand: node .next/standalone/server.js
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: NEXT_PUBLIC_API_URL
+        sync: false
+      - key: NEXT_PUBLIC_WS_URL
+        sync: false
+      - key: NEXT_PUBLIC_USE_MOCK
+        value: "false"
