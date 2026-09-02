@@ -46,7 +46,7 @@ export const TopNavbar: React.FC<TopNavbarProps> = ({ onOpenMobileMenu }) => {
   };
 
   return (
-    <header className="sticky top-0 z-20 flex h-16 sm:h-18 md:h-20 w-full items-center justify-between border-b border-border bg-card/95 px-3.5 sm:px-6 md:px-10 backdrop-blur-md">
+    <header className="sticky top-0 z-20 flex h-16 sm:h-20 w-full items-center justify-between border-b border-border bg-card/95 px-3.5 sm:px-6 md:px-10 backdrop-blur-md">
       {/* Left: Mobile Menu Toggle */}
       <div className="flex items-center gap-2 sm:gap-4">
         <button
@@ -72,7 +72,7 @@ export const TopNavbar: React.FC<TopNavbarProps> = ({ onOpenMobileMenu }) => {
           className="inline-flex items-center gap-2 rounded-2xl border border-border bg-card px-3.5 sm:px-4 py-2 text-xs sm:text-sm font-semibold text-foreground hover:bg-primary/5 active:scale-[0.98] transition-all shadow-2xs cursor-pointer min-h-[38px]"
           title="Refresh Operations Data"
         >
-          <RefreshCw className={h-4 w-4 text-foreground/80 ${refreshing ? "animate-spin" : ""}} />
+         <RefreshCw className={`h-4 w-4 text-foreground/80 ${refreshing ? "animate-spin" : ""}`} />
           <span className="hidden min-[400px]:inline">Refresh</span>
         </button>
 
