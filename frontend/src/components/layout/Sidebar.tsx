@@ -60,7 +60,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     return (
       <div className="flex h-full flex-col justify-between bg-[#24201C] text-white border-r border-border">
         {/* Brand Header */}
-        <div className="relative flex h-28 md:h-32 w-full border-b border-border bg-card overflow-hidden shrink-0">
+        <div className="relative flex h-16 sm:h-18 md:h-20 w-full border-b border-border bg-card overflow-hidden shrink-0">
           {isCollapsed ? (
             /* Collapsed Header Layout: Centered logo image */
             <div className="relative flex h-full w-full flex-col items-center justify-center p-2">
@@ -98,9 +98,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
           )}
         </div>
 
-        <div className="flex-1 overflow-y-auto">
+        <div className="flex-1 overflow-hidden">
           {/* NAVIGATION */}
-          <div className={cn("py-4 md:py-6 space-y-1.5", isCollapsed ? "px-2" : "px-4 lg:px-6")}>
+          <div className={cn("py-2 space-y-1", isCollapsed ? "px-2" : "px-3 lg:px-4")}>
             {mainNav.map((item) => {
               const isActive = pathname.startsWith(item.href);
               const Icon = item.icon;
@@ -113,7 +113,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     "flex items-center rounded-2xl transition-all group relative min-h-[44px]",
                     isCollapsed
                       ? "h-11 w-11 justify-center mx-auto"
-                      : "gap-3.5 px-4 lg:px-6 py-3 md:py-4 text-base lg:text-xl font-medium",
+                      : "gap-3 px-3 lg:px-4 py-2 md:py-2.5 text-sm lg:text-base font-medium",
                     isActive
                       ? "bg-[#F98513] text-white font-semibold shadow-md"
                       : "text-gray-300 hover:bg-[#342E28] hover:text-white font-medium"
@@ -134,14 +134,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
         </div>
 
         {/* Bottom Sign Out Footer Action Card */}
-        <div className={cn("bg-[#24201C] text-white", isCollapsed ? "p-2" : "p-4 lg:p-6")}>
+        <div className={cn("bg-[#24201C] text-white", isCollapsed ? "p-2" : "p-3 lg:p-4")}>
           <button
             onClick={logout}
             className={cn(
               "flex items-center rounded-2xl text-rose-500 hover:bg-rose-950/30 hover:text-rose-400 transition-all font-bold min-h-[44px]",
               isCollapsed
                 ? "h-11 w-11 justify-center mx-auto"
-                : "w-full justify-start px-4 lg:px-6 py-3 md:py-4 text-base lg:text-xl"
+                : "w-full justify-start px-3 lg:px-4 py-2 md:py-2.5 text-sm lg:text-base"
             )}
             title="Sign Out"
           >
