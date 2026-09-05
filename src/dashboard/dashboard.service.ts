@@ -7,38 +7,32 @@ export class DashboardService {
   constructor(private prisma: PrismaService) {}
 
   async getOverview() {
-    const [
-      totalBookings,
-      completedBookings,
-      pendingBookings,
-      cancelledBookings,
-      inProgressBookings,
-      assignedBookings,
-      totalCustomers,
-      totalMechanics,
-      revenueAggregate,
-    ] = await Promise.all([
-      this.prisma.booking.count(),
-      this.prisma.booking.count({ where: { status: BookingStatus.COMPLETED } }),
-      this.prisma.booking.count({ where: { status: BookingStatus.PENDING } }),
-      this.prisma.booking.count({ where: { status: BookingStatus.CANCELLED } }),
-      this.prisma.booking.count({ where: { status: BookingStatus.IN_PROGRESS } }),
-      this.prisma.booking.count({ where: { status: BookingStatus.ASSIGNED } }),
-      this.prisma.customer.count(),
-      this.prisma.mechanic.count(),
-      this.prisma.booking.aggregate({
-        _sum: { amount: true },
-        where: { status: BookingStatus.COMPLETED },
-      }),
-    ]);
+    const [statusCounts, totalBookings, totalCustomers, totalMechanics, revenueAggregate] =
+      await Promise.all([
+        this.prisma.booking.groupBy({
+          by: ['status'],
+          _count: { id: true },
+        }),
+        this.prisma.booking.count(),
+        this.prisma.customer.count(),
+        this.prisma.mechanic.count(),
+        this.prisma.booking.aggregate({
+          _sum: { amount: true },
+          where: { status: BookingStatus.COMPLETED },
+        }),
+      ]);
+
+    const counts = Object.fromEntries(
+      statusCounts.map((s) => [s.status, s._count.id]),
+    );
 
     return {
       totalBookings,
-      completedBookings,
-      pendingBookings,
-      cancelledBookings,
-      inProgressBookings,
-      assignedBookings,
+      completedBookings: counts[BookingStatus.COMPLETED] ?? 0,
+      pendingBookings: counts[BookingStatus.PENDING] ?? 0,
+      cancelledBookings: counts[BookingStatus.CANCELLED] ?? 0,
+      inProgressBookings: counts[BookingStatus.IN_PROGRESS] ?? 0,
+      assignedBookings: counts[BookingStatus.ASSIGNED] ?? 0,
       totalCustomers,
       totalMechanics,
       totalRevenue: revenueAggregate._sum.amount ?? 0,
