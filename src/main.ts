@@ -17,11 +17,11 @@ async function bootstrap() {
   app.useGlobalFilters(new AllExceptionsFilter());
   app.useGlobalInterceptors(new LoggingInterceptor());
   
-  app.enableCors({
-    origin: '*',
-    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
-    credentials: true,
-  });
+app.enableCors({
+  origin: process.env.CORS_ALLOWED_ORIGINS?.split(',') || ['https://instantmechanic-dashboard.vercel.app'],
+  methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+  credentials: true,
+});
 
   const config = new DocumentBuilder()
     .setTitle('Instant Mechanic API')

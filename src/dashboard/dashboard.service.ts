@@ -46,40 +46,62 @@ export class DashboardService {
   }
 
   async getAnalytics() {
-    // Bookings by status
-    const bookingsByStatus = await this.prisma.booking.groupBy({
-      by: ['status'],
-      _count: { id: true },
-    });
-
-    // Bookings by service (top 10)
-    const bookingsByService = await this.prisma.booking.groupBy({
-      by: ['serviceId'],
-      _count: { id: true },
-      _sum: { amount: true },
-      orderBy: { _count: { id: 'desc' } },
-      take: 10,
-    });
-
-    // Get service names for those IDs
-    const serviceIds = bookingsByService.map((b) => b.serviceId);
-    const services = await this.prisma.service.findMany({
-      where: { id: { in: serviceIds } },
-      select: { id: true, name: true },
-    });
-    const serviceMap = Object.fromEntries(services.map((s) => [s.id, s.name]));
-
-    // Bookings over last 30 days (by day)
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
-    const recentBookings = await this.prisma.booking.findMany({
-      where: { bookingDate: { gte: thirtyDaysAgo } },
-      select: { bookingDate: true, amount: true, status: true },
-      orderBy: { bookingDate: 'asc' },
-    });
+    // Batch 1: independent queries — run in parallel instead of sequentially
+    const [bookingsByStatus, bookingsByService, recentBookings, mechanicPerformance] =
+      await Promise.all([
+        this.prisma.booking.groupBy({
+          by: ['status'],
+          _count: { id: true },
+        }),
+        this.prisma.booking.groupBy({
+          by: ['serviceId'],
+          _count: { id: true },
+          _sum: { amount: true },
+          orderBy: { _count: { id: 'desc' } },
+          take: 10,
+        }),
+        this.prisma.booking.findMany({
+          where: { bookingDate: { gte: thirtyDaysAgo } },
+          select: { bookingDate: true, amount: true, status: true },
+          orderBy: { bookingDate: 'asc' },
+        }),
+        this.prisma.booking.groupBy({
+          by: ['mechanicId'],
+          where: {
+            mechanicId: { not: null },
+            status: BookingStatus.COMPLETED,
+          },
+          _count: { id: true },
+          _sum: { amount: true },
+          orderBy: { _count: { id: 'desc' } },
+          take: 10,
+        }),
+      ]);
 
-    // Group by date
+    // Batch 2: name lookups — depend on batch 1 results, also run in parallel with each other
+    const serviceIds = bookingsByService.map((b) => b.serviceId);
+    const mechanicIds = mechanicPerformance
+      .map((m) => m.mechanicId)
+      .filter(Boolean) as string[];
+
+    const [services, mechanics] = await Promise.all([
+      this.prisma.service.findMany({
+        where: { id: { in: serviceIds } },
+        select: { id: true, name: true },
+      }),
+      this.prisma.mechanic.findMany({
+        where: { id: { in: mechanicIds } },
+        select: { id: true, name: true },
+      }),
+    ]);
+
+    const serviceMap = Object.fromEntries(services.map((s) => [s.id, s.name]));
+    const mechanicMap = Object.fromEntries(mechanics.map((m) => [m.id, m.name]));
+
+    // Group bookings by date — in-memory only, no DB call, unchanged
     const bookingsByDate: Record<string, { count: number; revenue: number }> = {};
     for (const booking of recentBookings) {
       const dateKey = booking.bookingDate.toISOString().split('T')[0];
@@ -91,28 +113,6 @@ export class DashboardService {
         bookingsByDate[dateKey].revenue += booking.amount;
       }
     }
-
-    // Mechanic performance (top 10 by completed bookings)
-    const mechanicPerformance = await this.prisma.booking.groupBy({
-      by: ['mechanicId'],
-      where: {
-        mechanicId: { not: null },
-        status: BookingStatus.COMPLETED,
-      },
-      _count: { id: true },
-      _sum: { amount: true },
-      orderBy: { _count: { id: 'desc' } },
-      take: 10,
-    });
-
-    const mechanicIds = mechanicPerformance
-      .map((m) => m.mechanicId)
-      .filter(Boolean) as string[];
-    const mechanics = await this.prisma.mechanic.findMany({
-      where: { id: { in: mechanicIds } },
-      select: { id: true, name: true },
-    });
-    const mechanicMap = Object.fromEntries(mechanics.map((m) => [m.id, m.name]));
 
     return {
       bookingsByStatus: bookingsByStatus.map((b) => ({
