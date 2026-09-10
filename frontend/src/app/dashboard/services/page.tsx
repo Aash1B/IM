@@ -1,10 +1,11 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { Wrench, Search, DollarSign, Tag, Calendar, Activity, ArrowUpRight, CheckCircle2, Info } from "lucide-react";
+import { Wrench, Search, IndianRupee, Tag, Calendar, Activity, ArrowUpRight, CheckCircle2, Info } from "lucide-react";
 import { serviceService } from "@/services/service.service";
 import { ServiceItem } from "@/types/service";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
+import { formatCurrencyINR } from "@/lib/utils";
 
 export default function ServicesPage() {
   const [services, setServices] = useState<ServiceItem[]>([]);
@@ -58,10 +59,10 @@ export default function ServicesPage() {
           <div className="flex items-center justify-between">
             <span className="text-xs sm:text-sm font-semibold text-muted-foreground uppercase tracking-wider">Average Price</span>
             <div className="p-2.5 bg-emerald-50 dark:bg-emerald-950/40 rounded-xl">
-              <DollarSign className="w-5 h-5 text-emerald-600" />
+              <IndianRupee className="w-5 h-5 text-emerald-600" />
             </div>
           </div>
-          <p className="text-2xl sm:text-3xl md:text-4xl font-bold text-foreground mt-2">${avgPrice.toFixed(2)}</p>
+          <p className="text-2xl sm:text-3xl md:text-4xl font-bold text-foreground mt-2">{formatCurrencyINR(avgPrice)}</p>
           <span className="text-xs sm:text-sm text-muted-foreground font-medium mt-1.5 block">Per service call</span>
         </div>
 
@@ -83,7 +84,7 @@ export default function ServicesPage() {
               <Activity className="w-5 h-5 text-purple-600" />
             </div>
           </div>
-          <p className="text-2xl sm:text-3xl md:text-4xl font-bold text-foreground mt-2">${totalRevenueAll.toLocaleString(undefined, { minimumFractionDigits: 2 })}</p>
+          <p className="text-2xl sm:text-3xl md:text-4xl font-bold text-foreground mt-2">{formatCurrencyINR(totalRevenueAll)}</p>
           <span className="text-xs sm:text-sm text-purple-600 font-medium mt-1.5 block">Generated from service orders</span>
         </div>
       </div>
@@ -123,7 +124,7 @@ export default function ServicesPage() {
               <div>
                 <div className="flex items-start justify-between gap-2 mb-3.5">
                   <span className="px-3 py-1.5 bg-indigo-50 text-indigo-700 font-extrabold text-sm sm:text-base rounded-xl">
-                    ${service.price.toFixed(2)}
+                    {formatCurrencyINR(service.price)}
                   </span>
                   <span className="text-xs sm:text-sm font-semibold text-gray-400 bg-gray-50 px-2.5 py-1 rounded-lg">
                     ID: {service.id}
@@ -180,7 +181,7 @@ export default function ServicesPage() {
               <div className="grid grid-cols-2 gap-3.5">
                 <div className="bg-gray-50 p-4 rounded-2xl">
                   <span className="text-xs text-gray-500 font-semibold block mb-1">Standard Rate</span>
-                  <span className="text-lg sm:text-xl font-black text-gray-900">${selectedService.price.toFixed(2)}</span>
+                  <span className="text-lg sm:text-xl font-black text-gray-900">{formatCurrencyINR(selectedService.price)}</span>
                 </div>
 
                 <div className="bg-gray-50 p-4 rounded-2xl">
@@ -192,7 +193,7 @@ export default function ServicesPage() {
               <div className="bg-emerald-50 p-4 rounded-2xl border border-emerald-100 flex justify-between items-center">
                 <span className="text-xs sm:text-sm font-bold text-emerald-800">Total Revenue Generated</span>
                 <span className="text-lg sm:text-xl font-black text-emerald-900">
-                  ${(selectedService.totalRevenue || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                  {formatCurrencyINR(selectedService.totalRevenue || 0)}
                 </span>
               </div>
             </div>

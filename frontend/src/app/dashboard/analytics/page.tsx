@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from "react";
 import {
   TrendingUp,
-  DollarSign,
+  IndianRupee,
   Calendar,
   CheckCircle,
   Activity,
@@ -30,6 +30,7 @@ import {
 import { dashboardService } from "@/services/dashboard.service";
 import { AnalyticsData } from "@/types/dashboard";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
+import { formatCurrencyINR } from "@/lib/utils";
 
 const STATUS_COLORS: Record<string, string> = {
   COMPLETED: "#10B981",
@@ -127,11 +128,11 @@ export default function AnalyticsPage() {
           <div className="flex items-center justify-between">
             <span className="text-[11px] sm:text-xs font-semibold text-muted-foreground uppercase tracking-wider">Total Revenue</span>
             <div className="p-1.5 sm:p-2 bg-emerald-50 dark:bg-emerald-950/40 rounded-xl">
-              <DollarSign className="w-4 h-4 text-emerald-600" />
+              <IndianRupee className="w-4 h-4 text-emerald-600" />
             </div>
           </div>
           <p className="text-xl sm:text-2xl font-bold text-foreground mt-2">
-            ${totalRevenue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            {formatCurrencyINR(totalRevenue)}
           </p>
           <div className="flex items-center gap-1.5 text-xs sm:text-sm font-semibold text-emerald-600 dark:text-emerald-400 mt-1.5">
             <TrendingUp className="w-4 h-4 shrink-0" /> +14.2% vs previous period
@@ -159,7 +160,7 @@ export default function AnalyticsPage() {
             </div>
           </div>
           <p className="text-xl sm:text-2xl font-bold text-foreground mt-2">
-            ${avgOrderValue.toFixed(2)}
+            {formatCurrencyINR(avgOrderValue)}
           </p>
           <span className="text-xs sm:text-sm text-muted-foreground font-medium block mt-1.5">Per completed booking</span>
         </div>
@@ -183,7 +184,7 @@ export default function AnalyticsPage() {
           <div className="flex items-center justify-between mb-4 sm:mb-6">
             <div>
               <h3 className="text-xl sm:text-2xl md:text-3xl font-bold text-foreground">Revenue & Booking Timeline</h3>
-              <p className="text-xs sm:text-sm md:text-base font-normal text-muted-foreground mt-1">Daily breakdown of total revenue ($) and booking count</p>
+              <p className="text-xs sm:text-sm md:text-base font-normal text-muted-foreground mt-1">Daily breakdown of total revenue (₹) and booking count</p>
             </div>
             <span className="text-xs font-semibold px-3 py-1 bg-indigo-50 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-300 rounded-lg border border-indigo-200 dark:border-indigo-800/40">
               30 Days
@@ -216,7 +217,7 @@ export default function AnalyticsPage() {
                     fontSize: "12px",
                   }}
                 />
-                <Area yAxisId="left" type="monotone" dataKey="revenue" name="Revenue ($)" stroke="#10B981" fillOpacity={1} fill="url(#colorRevenue)" strokeWidth={2} />
+                <Area yAxisId="left" type="monotone" dataKey="revenue" name="Revenue (₹)" stroke="#10B981" fillOpacity={1} fill="url(#colorRevenue)" strokeWidth={2} />
                 <Area yAxisId="right" type="monotone" dataKey="bookings" name="Bookings" stroke="#6366F1" fillOpacity={1} fill="url(#colorBookings)" strokeWidth={2} />
               </AreaChart>
             </ResponsiveContainer>
@@ -342,7 +343,7 @@ export default function AnalyticsPage() {
                   </div>
                   <div className="text-right shrink-0">
                     <span className="text-base sm:text-lg font-bold text-emerald-600 dark:text-emerald-400 block">
-                      ${m.totalRevenue.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                      {formatCurrencyINR(m.totalRevenue)}
                     </span>
                     <span className="text-xs font-medium text-muted-foreground block mt-0.5">Earned Revenue</span>
                   </div>
