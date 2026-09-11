@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from "react";
 import {
   TrendingUp,
-  IndianRupee,
+  DollarSign,
   Calendar,
   CheckCircle,
   Activity,
@@ -30,7 +30,6 @@ import {
 import { dashboardService } from "@/services/dashboard.service";
 import { AnalyticsData } from "@/types/dashboard";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
-import { formatCurrencyINR } from "@/lib/utils";
 
 const STATUS_COLORS: Record<string, string> = {
   COMPLETED: "#10B981",
@@ -124,80 +123,86 @@ export default function AnalyticsPage() {
 
       {/* KPI Overview Cards */}
       <div className="grid grid-cols-1 min-[420px]:grid-cols-2 lg:grid-cols-4 gap-3.5 sm:gap-5">
-        <div className="bg-card border border-border bg-brand-grid dark:bg-dark-grid rounded-2xl p-4 sm:p-5 shadow-sm">
-          <div className="flex items-center justify-between">
-            <span className="text-[11px] sm:text-xs font-semibold text-muted-foreground uppercase tracking-wider">Total Revenue</span>
-            <div className="p-1.5 sm:p-2 bg-emerald-50 dark:bg-emerald-950/40 rounded-xl">
-              <IndianRupee className="w-4 h-4 text-emerald-600" />
+        <div className="bg-card border border-border rounded-2xl sm:rounded-3xl p-4 sm:p-6 md:p-7 shadow-xs">
+          <div className="flex items-center justify-between mb-3 sm:mb-4">
+            <span className="text-xs sm:text-sm font-bold text-muted-foreground uppercase tracking-wider">Total Revenue</span>
+            <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center">
+              <DollarSign className="w-5 h-5 sm:w-6 sm:h-6" />
             </div>
           </div>
-          <p className="text-xl sm:text-2xl font-bold text-foreground mt-2">
-            {formatCurrencyINR(totalRevenue)}
+          <div className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-foreground">
+            ₹{totalRevenue.toLocaleString("en-IN", { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+          </div>
+          <p className="text-xs sm:text-sm font-medium text-emerald-600 dark:text-emerald-400 mt-2 flex items-center gap-1.5">
+            <span className="font-semibold">+14.8%</span> from prior operating period
           </p>
-          <div className="flex items-center gap-1.5 text-xs sm:text-sm font-semibold text-emerald-600 dark:text-emerald-400 mt-1.5">
-            <TrendingUp className="w-4 h-4 shrink-0" /> +14.2% vs previous period
-          </div>
         </div>
 
-        <div className="bg-card border border-border bg-brand-grid dark:bg-dark-grid rounded-2xl p-4 sm:p-5 shadow-sm">
-          <div className="flex items-center justify-between">
-            <span className="text-xs sm:text-sm font-bold text-muted-foreground uppercase tracking-wider">Total Volume</span>
-            <div className="p-1.5 sm:p-2 bg-indigo-50 dark:bg-indigo-950/40 rounded-xl">
-              <Calendar className="w-4 h-4 text-indigo-600" />
+        {/* Total Bookings Card */}
+        <div className="bg-card border border-border rounded-2xl sm:rounded-3xl p-4 sm:p-6 md:p-7 shadow-xs">
+          <div className="flex items-center justify-between mb-3 sm:mb-4">
+            <span className="text-xs sm:text-sm font-bold text-muted-foreground uppercase tracking-wider">Total Dispatches</span>
+            <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-indigo-500/10 text-indigo-500 flex items-center justify-center">
+              <Calendar className="w-5 h-5 sm:w-6 sm:h-6" />
             </div>
           </div>
-          <p className="text-xl sm:text-2xl font-bold text-foreground mt-2">{totalBookings} Jobs</p>
-          <div className="flex items-center gap-1.5 text-xs sm:text-sm font-semibold text-indigo-600 dark:text-indigo-400 mt-1.5">
-            <Activity className="w-4 h-4 shrink-0" /> Active operations dispatch
+          <div className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-foreground">
+            {totalBookings.toLocaleString()}
           </div>
+          <p className="text-xs sm:text-sm font-medium text-muted-foreground mt-2">All time customer appointments</p>
         </div>
 
-        <div className="bg-card border border-border bg-brand-grid dark:bg-dark-grid rounded-2xl p-4 sm:p-5 shadow-sm">
-          <div className="flex items-center justify-between">
+        {/* Avg Order Value Card */}
+        <div className="bg-card border border-border rounded-2xl sm:rounded-3xl p-4 sm:p-6 md:p-7 shadow-xs">
+          <div className="flex items-center justify-between mb-3 sm:mb-4">
             <span className="text-xs sm:text-sm font-bold text-muted-foreground uppercase tracking-wider">Avg Order Value</span>
-            <div className="p-1.5 sm:p-2 bg-blue-50 dark:bg-blue-950/40 rounded-xl">
-              <TrendingUp className="w-4 h-4 text-blue-600" />
+            <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-blue-500/10 text-blue-500 flex items-center justify-center">
+              <TrendingUp className="w-5 h-5 sm:w-6 sm:h-6" />
             </div>
           </div>
-          <p className="text-xl sm:text-2xl font-bold text-foreground mt-2">
-            {formatCurrencyINR(avgOrderValue)}
+          <div className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-foreground">
+            ₹{avgOrderValue.toLocaleString("en-IN", { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+          </div>
+          <p className="text-xs sm:text-sm font-medium text-blue-600 dark:text-blue-400 mt-2 flex items-center gap-1.5">
+            <span className="font-semibold">+5.2%</span> average invoice ticket size
           </p>
-          <span className="text-xs sm:text-sm text-muted-foreground font-medium block mt-1.5">Per completed booking</span>
         </div>
 
-        <div className="bg-card border border-border bg-brand-grid dark:bg-dark-grid rounded-2xl p-4 sm:p-5 shadow-sm">
-          <div className="flex items-center justify-between">
+        {/* Completion Rate Card */}
+        <div className="bg-card border border-border rounded-2xl sm:rounded-3xl p-4 sm:p-6 md:p-7 shadow-xs">
+          <div className="flex items-center justify-between mb-3 sm:mb-4">
             <span className="text-xs sm:text-sm font-bold text-muted-foreground uppercase tracking-wider">Completion Rate</span>
-            <div className="p-1.5 sm:p-2 bg-purple-50 dark:bg-purple-950/40 rounded-xl">
-              <CheckCircle className="w-4 h-4 text-purple-600" />
+            <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-violet-500/10 text-violet-500 flex items-center justify-center">
+              <CheckCircle className="w-5 h-5 sm:w-6 sm:h-6" />
             </div>
           </div>
-          <p className="text-xl sm:text-2xl font-bold text-foreground mt-2">{completionRate.toFixed(1)}%</p>
-          <span className="text-xs sm:text-sm text-purple-600 dark:text-purple-400 font-medium block mt-1.5">SLA operational compliance</span>
+          <div className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-foreground">
+            {completionRate.toFixed(1)}%
+          </div>
+          <p className="text-xs sm:text-sm font-medium text-violet-600 dark:text-violet-400 mt-2 flex items-center gap-1.5">
+            <span className="font-semibold">{completedCount}</span> jobs successfully completed
+          </p>
         </div>
       </div>
 
-      {/* Row 1: Charts */}
+      {/* Row 1: Charts Section */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Revenue & Booking Timeline Chart */}
+        {/* Main Growth Area Chart */}
         <div className="lg:col-span-2 bg-card border border-border rounded-3xl p-4 sm:p-6 md:p-8 shadow-sm">
-          <div className="flex items-center justify-between mb-4 sm:mb-6">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4 sm:mb-6">
             <div>
-              <h3 className="text-xl sm:text-2xl md:text-3xl font-bold text-foreground">Revenue & Booking Timeline</h3>
+              <h3 className="text-xl sm:text-2xl md:text-3xl font-bold text-foreground">Revenue & Bookings Trend</h3>
               <p className="text-xs sm:text-sm md:text-base font-normal text-muted-foreground mt-1">Daily breakdown of total revenue (₹) and booking count</p>
             </div>
-            <span className="text-xs font-semibold px-3 py-1 bg-indigo-50 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-300 rounded-lg border border-indigo-200 dark:border-indigo-800/40">
-              30 Days
-            </span>
           </div>
 
-          <div className="h-64 sm:h-72 w-full">
+          <div className="h-[280px] sm:h-[340px] md:h-[380px] w-full">
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={trendData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                 <defs>
                   <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="5%" stopColor="#10B981" stopOpacity={0.4} />
-                    <stop offset="95%" stopColor="#10B981" stopOpacity={0} />
+                    <stop offset="95%" stopColor="#10B981" stopOpacity={0.0} />
                   </linearGradient>
                   <linearGradient id="colorBookings" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="5%" stopColor="#6366F1" stopOpacity={0.3} />
@@ -205,8 +210,8 @@ export default function AnalyticsPage() {
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#F1F5F9" />
-                <XAxis dataKey="date" tick={{ fontSize: 10, fill: "#94A3B8" }} tickLine={false} />
-                <YAxis yAxisId="left" tick={{ fontSize: 10, fill: "#94A3B8" }} tickLine={false} axisLine={false} />
+                <XAxis dataKey="date" tick={{ fontSize: 12, fill: "#94A3B8" }} axisLine={false} tickFormatter={(d) => d.slice(5)} />
+                <YAxis yAxisId="left" tick={{ fontSize: 12, fill: "#94A3B8" }} axisLine={false} tickFormatter={(v) => `₹${v}`} />
                 <YAxis yAxisId="right" orientation="right" tick={{ fontSize: 10, fill: "#94A3B8" }} tickLine={false} axisLine={false} />
                 <Tooltip
                   contentStyle={{
@@ -217,7 +222,7 @@ export default function AnalyticsPage() {
                     fontSize: "12px",
                   }}
                 />
-                <Area yAxisId="left" type="monotone" dataKey="revenue" name="Revenue (₹)" stroke="#10B981" fillOpacity={1} fill="url(#colorRevenue)" strokeWidth={2} />
+                <Area yAxisId="left" type="monotone" dataKey="revenue" name="Revenue ($)" stroke="#10B981" fillOpacity={1} fill="url(#colorRevenue)" strokeWidth={2} />
                 <Area yAxisId="right" type="monotone" dataKey="bookings" name="Bookings" stroke="#6366F1" fillOpacity={1} fill="url(#colorBookings)" strokeWidth={2} />
               </AreaChart>
             </ResponsiveContainer>
@@ -343,7 +348,7 @@ export default function AnalyticsPage() {
                   </div>
                   <div className="text-right shrink-0">
                     <span className="text-base sm:text-lg font-bold text-emerald-600 dark:text-emerald-400 block">
-                      {formatCurrencyINR(m.totalRevenue)}
+                      ₹{m.totalRevenue.toLocaleString("en-IN", { minimumFractionDigits: 0 })}
                     </span>
                     <span className="text-xs font-medium text-muted-foreground block mt-0.5">Earned Revenue</span>
                   </div>

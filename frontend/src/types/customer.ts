@@ -29,3 +29,17 @@ export interface CustomersResponse {
   data: Customer[];
   pagination: Pagination;
 }
+
+export interface CreateCustomerPayload {
+  name: string;
+  email: string;
+  phone?: string;
+  vehicleMake?: string;
+  vehicleModel?: string;
+  vehicleYear?: number;
+  vehicleLicensePlate?: string;
+}
+
+export interface SingleCustomerResponse {
+  data: Customer;
+}

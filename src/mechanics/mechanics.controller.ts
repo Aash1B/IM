@@ -1,11 +1,17 @@
 import { Controller, Get, Param, Body, Post, UseGuards } from '@nestjs/common';
 import { MechanicsService } from './mechanics.service.js';
-import { JwtAuthGuard } from '../auth/guards/optional-jwt-auth.guard.js';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard.js';
+import { CreateMechanicDto } from './dto/create-mechanic.dto.js';
 
 @UseGuards(JwtAuthGuard)
 @Controller('mechanics')
 export class MechanicsController {
   constructor(private readonly mechanicsService: MechanicsService) {}
+
+  @Post()
+  create(@Body() dto: CreateMechanicDto) {
+    return this.mechanicsService.create(dto);
+  }
 
   @Get()
   findAll() {

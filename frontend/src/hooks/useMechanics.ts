@@ -9,7 +9,7 @@ export function useMechanics(initialParams: MechanicFilterParams = {}) {
   const [locations, setLocations] = useState<MechanicLocationItem[]>([]);
   const [pagination, setPagination] = useState<Pagination>({
     page: 1,
-    limit: 10,
+    limit: 9,
     total: 0,
     totalPages: 1,
   });

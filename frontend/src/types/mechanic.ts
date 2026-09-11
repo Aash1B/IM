@@ -34,6 +34,15 @@ export interface Mechanic {
   lastBooking?: CurrentBookingSummary | null;
   location?: MechanicLocation;
   recentBookings?: any[];
+  createdAt?: string;
+}
+
+export interface CreateMechanicPayload {
+  name: string;
+  email: string;
+  phone?: string;
+  latitude?: number;
+  longitude?: number;
 }
 
 export interface MechanicFilterParams {

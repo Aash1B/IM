@@ -101,3 +101,4 @@ export interface CreateBookingPayload {
   amount?: number;
   status?: BookingStatus;
 }
+

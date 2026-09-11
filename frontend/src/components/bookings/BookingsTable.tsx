@@ -13,10 +13,12 @@ import {
   LayoutList,
   Table as TableIcon,
   Plus,
+  Loader2,
 } from "lucide-react";
 import { Booking, BookingFilterParams, Pagination, BookingStatus } from "@/types/booking";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import { formatCurrencyINR, formatDate } from "@/lib/utils";
+import { getToken } from "@/lib/api";
 
 interface BookingsTableProps {
   bookings: Booking[];
@@ -40,6 +42,32 @@ export const BookingsTable: React.FC<BookingsTableProps> = ({
   onNewBooking,
 }) => {
   const [viewMode, setViewMode] = useState<"card" | "table">("card");
+  const [exporting, setExporting] = useState(false);
+
+  const handleExport = async () => {
+    if (!exportUrl) return;
+    setExporting(true);
+    try {
+      const token = getToken();
+      const res = await fetch(exportUrl, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
+      if (!res.ok) throw new Error("Export failed");
+      const blob = await res.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `bookings-export-${new Date().toISOString().slice(0, 10)}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    } catch {
+      window.open(exportUrl, "_blank");
+    } finally {
+      setExporting(false);
+    }
+  };
 
   const handleSort = (field: string) => {
     const isAsc = params.sortBy === field && params.sortOrder === "asc";
@@ -51,7 +79,7 @@ export const BookingsTable: React.FC<BookingsTableProps> = ({
 
   return (
     <div className="space-y-6">
-      {/* Filter Bar Header */}
+      {/* Filter Bar Header inspired by SehatSetu layout */}
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between bg-card bg-brand-grid dark:bg-dark-grid p-5 rounded-2xl border border-border shadow-2xs">
         {/* Search Input */}
         <div className="relative flex-1 max-w-lg">
@@ -119,14 +147,18 @@ export const BookingsTable: React.FC<BookingsTableProps> = ({
 
           {/* Export CSV Trigger */}
           {exportUrl && (
-            <a
-              href={exportUrl}
-              download="bookings-export.csv"
-              className="inline-flex items-center gap-2.5 rounded-xl border border-border bg-card px-5 py-3 text-sm md:text-base font-bold text-foreground hover:bg-secondary transition-colors shadow-2xs"
+            <button
+              onClick={handleExport}
+              disabled={exporting}
+              className="inline-flex items-center gap-2.5 rounded-xl border border-border bg-card px-5 py-3 text-sm md:text-base font-bold text-foreground hover:bg-secondary transition-colors shadow-2xs cursor-pointer disabled:opacity-50"
             >
-              <Download className="h-5 w-5 text-[#F98513]" />
-              Export
-            </a>
+              {exporting ? (
+                <Loader2 className="h-5 w-5 text-[#F98513] animate-spin" />
+              ) : (
+                <Download className="h-5 w-5 text-[#F98513]" />
+              )}
+              <span>{exporting ? "Exporting..." : "Export"}</span>
+            </button>
           )}
 
           {/* New Booking Button */}
@@ -164,7 +196,7 @@ export const BookingsTable: React.FC<BookingsTableProps> = ({
                   key={b.id}
                   className="flex flex-col md:flex-row md:items-center justify-between gap-4 rounded-2xl border border-border bg-card bg-brand-grid dark:bg-dark-grid p-5 md:p-6 shadow-2xs hover:border-[#F98513]/40 hover:shadow-md transition-all group"
                 >
-                  {/* Left: Avatar + Divider + Details */}
+                  {/* Left: Circular Dark Avatar Badge + Vertical Line Divider + Name + Status Badge */}
                   <div className="flex items-center gap-4">
                     <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#171512] text-white font-black text-base shadow-2xs shrink-0">
                       {customerInitials}
@@ -189,7 +221,7 @@ export const BookingsTable: React.FC<BookingsTableProps> = ({
                     </div>
                   </div>
 
-                  {/* Right: Date/Time + Amount + Action Button */}
+                  {/* Right: Date/Time + Amount + Action Buttons */}
                   <div className="flex items-center gap-4 border-t md:border-t-0 border-secondary pt-3 md:pt-0 justify-between md:justify-end">
                     <div className="flex items-center gap-2 text-xs md:text-sm font-medium text-muted-foreground">
                       <Clock className="h-4 w-4 text-muted-foreground" />
@@ -258,7 +290,7 @@ export const BookingsTable: React.FC<BookingsTableProps> = ({
                   <td className="py-5 px-6 text-xs md:text-sm">{formatDate(b.scheduledAt)}</td>
                   <td className="py-5 px-6 text-right">
                     <Link
-                     href={`/dashboard/bookings/${b.id}`}
+                      href={`/dashboard/bookings/${b.id}`}
                       className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-border text-foreground hover:bg-[#F98513] hover:text-white transition-colors"
                     >
                       <Eye className="h-5 w-5" />

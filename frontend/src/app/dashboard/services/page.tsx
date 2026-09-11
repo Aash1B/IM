@@ -1,32 +1,34 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
-import { Wrench, Search, IndianRupee, Tag, Calendar, Activity, ArrowUpRight, CheckCircle2, Info } from "lucide-react";
+import React, { useEffect, useState, useCallback } from "react";
+import { Wrench, Search, DollarSign, Tag, Calendar, Activity, ArrowUpRight, CheckCircle2, Info, Plus } from "lucide-react";
 import { serviceService } from "@/services/service.service";
 import { ServiceItem } from "@/types/service";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
-import { formatCurrencyINR } from "@/lib/utils";
+import { NewServiceModal } from "@/components/services/NewServiceModal";
 
 export default function ServicesPage() {
   const [services, setServices] = useState<ServiceItem[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [search, setSearch] = useState<string>("");
   const [selectedService, setSelectedService] = useState<ServiceItem | null>(null);
+  const [isNewModalOpen, setIsNewModalOpen] = useState<boolean>(false);
+
+  const fetchServices = useCallback(async () => {
+    setLoading(true);
+    try {
+      const res = await serviceService.getServices();
+      setServices(res.data);
+    } catch (err) {
+      console.error("Failed to load services", err);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
-    async function fetchServices() {
-      setLoading(true);
-      try {
-        const res = await serviceService.getServices();
-        setServices(res.data);
-      } catch (err) {
-        console.error("Failed to load services", err);
-      } finally {
-        setLoading(false);
-      }
-    }
     fetchServices();
-  }, []);
+  }, [fetchServices]);
 
   const filteredServices = services.filter((s) =>
     s.name.toLowerCase().includes(search.toLowerCase()) ||
@@ -59,10 +61,10 @@ export default function ServicesPage() {
           <div className="flex items-center justify-between">
             <span className="text-xs sm:text-sm font-semibold text-muted-foreground uppercase tracking-wider">Average Price</span>
             <div className="p-2.5 bg-emerald-50 dark:bg-emerald-950/40 rounded-xl">
-              <IndianRupee className="w-5 h-5 text-emerald-600" />
+              <DollarSign className="w-5 h-5 text-emerald-600" />
             </div>
           </div>
-          <p className="text-2xl sm:text-3xl md:text-4xl font-bold text-foreground mt-2">{formatCurrencyINR(avgPrice)}</p>
+          <p className="text-2xl sm:text-3xl md:text-4xl font-bold text-foreground mt-2">${avgPrice.toFixed(2)}</p>
           <span className="text-xs sm:text-sm text-muted-foreground font-medium mt-1.5 block">Per service call</span>
         </div>
 
@@ -84,7 +86,7 @@ export default function ServicesPage() {
               <Activity className="w-5 h-5 text-purple-600" />
             </div>
           </div>
-          <p className="text-2xl sm:text-3xl md:text-4xl font-bold text-foreground mt-2">{formatCurrencyINR(totalRevenueAll)}</p>
+          <p className="text-2xl sm:text-3xl md:text-4xl font-bold text-foreground mt-2">${totalRevenueAll.toLocaleString(undefined, { minimumFractionDigits: 2 })}</p>
           <span className="text-xs sm:text-sm text-purple-600 font-medium mt-1.5 block">Generated from service orders</span>
         </div>
       </div>
@@ -101,6 +103,14 @@ export default function ServicesPage() {
             className="w-full pl-11 pr-4 py-2.5 text-sm sm:text-base border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all font-medium"
           />
         </div>
+
+        <button
+          onClick={() => setIsNewModalOpen(true)}
+          className="inline-flex items-center justify-center gap-2 rounded-xl bg-indigo-600 px-5 py-2.5 sm:py-3 text-sm sm:text-base font-bold text-white shadow-md hover:bg-indigo-500 active:scale-[0.98] transition-all cursor-pointer whitespace-nowrap shrink-0"
+        >
+          <Plus className="h-5 w-5" />
+          <span>Add Service</span>
+        </button>
       </div>
 
       {/* Services Grid */}
@@ -124,7 +134,7 @@ export default function ServicesPage() {
               <div>
                 <div className="flex items-start justify-between gap-2 mb-3.5">
                   <span className="px-3 py-1.5 bg-indigo-50 text-indigo-700 font-extrabold text-sm sm:text-base rounded-xl">
-                    {formatCurrencyINR(service.price)}
+                    ${service.price.toFixed(2)}
                   </span>
                   <span className="text-xs sm:text-sm font-semibold text-gray-400 bg-gray-50 px-2.5 py-1 rounded-lg">
                     ID: {service.id}
@@ -181,7 +191,7 @@ export default function ServicesPage() {
               <div className="grid grid-cols-2 gap-3.5">
                 <div className="bg-gray-50 p-4 rounded-2xl">
                   <span className="text-xs text-gray-500 font-semibold block mb-1">Standard Rate</span>
-                  <span className="text-lg sm:text-xl font-black text-gray-900">{formatCurrencyINR(selectedService.price)}</span>
+                  <span className="text-lg sm:text-xl font-black text-gray-900">${selectedService.price.toFixed(2)}</span>
                 </div>
 
                 <div className="bg-gray-50 p-4 rounded-2xl">
@@ -193,7 +203,7 @@ export default function ServicesPage() {
               <div className="bg-emerald-50 p-4 rounded-2xl border border-emerald-100 flex justify-between items-center">
                 <span className="text-xs sm:text-sm font-bold text-emerald-800">Total Revenue Generated</span>
                 <span className="text-lg sm:text-xl font-black text-emerald-900">
-                  {formatCurrencyINR(selectedService.totalRevenue || 0)}
+                  ${(selectedService.totalRevenue || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}
                 </span>
               </div>
             </div>
@@ -209,6 +219,13 @@ export default function ServicesPage() {
           </div>
         </div>
       )}
+
+      {/* Add Service Modal */}
+      <NewServiceModal
+        isOpen={isNewModalOpen}
+        onClose={() => setIsNewModalOpen(false)}
+        onServiceCreated={fetchServices}
+      />
     </div>
   );
 }

@@ -1,10 +1,11 @@
-import { apiFetch } from "../lib/api";
+import { apiFetch } from "@/lib/api";
 import {
   MechanicsResponse,
   SingleMechanicResponse,
   MechanicLocationsResponse,
   MechanicFilterParams,
   MechanicStatus,
+  CreateMechanicPayload,
 } from "../types/mechanic";
 
 
@@ -17,7 +18,17 @@ function mapRawMechanic(m: any) {
     OFFLINE: "OFFLINE",
   };
   const rawStatus = m.status || (m.locations?.length ? "AVAILABLE" : "OFFLINE");
-  const jobsCount = m.bookings?.filter((b: any) => b.status === "COMPLETED").length || m.jobsCompleted || m.totalCompletedBookings || 12;
+  const jobsCount = Array.isArray(m.bookings)
+    ? m.bookings.filter((b: any) => b.status === "COMPLETED").length
+    : (typeof m.jobsCompleted === "number"
+        ? m.jobsCompleted
+        : typeof m.totalCompletedBookings === "number"
+        ? m.totalCompletedBookings
+        : 0);
+
+  const totalJobsCount = Array.isArray(m.bookings)
+    ? m.bookings.length
+    : (typeof m.totalJobs === "number" ? m.totalJobs : jobsCount);
 
   const validStatus: MechanicStatus = (statusMap[rawStatus] || "AVAILABLE") as MechanicStatus;
 
@@ -28,7 +39,8 @@ function mapRawMechanic(m: any) {
     phone: m.phone || "N/A",
     status: validStatus,
     jobsCompleted: jobsCount,
-    totalJobs: jobsCount + 2,
+    totalJobs: totalJobsCount,
+    createdAt: m.createdAt,
     location: m.locations?.[0] ? {
       latitude: m.locations[0].latitude,
       longitude: m.locations[0].longitude,
@@ -43,8 +55,6 @@ function mapRawMechanic(m: any) {
 
 export const mechanicService = {
   async getMechanics(params: MechanicFilterParams = {}): Promise<MechanicsResponse> {
-    
-
     const queryParams = new URLSearchParams();
     Object.entries(params).forEach(([key, value]) => {
       if (value !== undefined && value !== "") {
@@ -55,6 +65,13 @@ export const mechanicService = {
     const res = await apiFetch<any>(`/mechanics?${queryParams.toString()}`);
     const rawList = Array.isArray(res) ? res : Array.isArray(res?.data) ? res.data : [];
     let filtered = rawList.map(mapRawMechanic);
+
+    // Ensure newest mechanics appear first (latest on top)
+    filtered.sort((a: any, b: any) => {
+      const dateA = new Date(a.createdAt || 0).getTime();
+      const dateB = new Date(b.createdAt || 0).getTime();
+      return dateB - dateA;
+    });
 
     if (params.search) {
       const query = params.search.toLowerCase();
@@ -69,7 +86,7 @@ export const mechanicService = {
     }
 
     const page = params.page || 1;
-    const limit = params.limit || 10;
+    const limit = params.limit || 9;
     const total = filtered.length;
     const totalPages = Math.ceil(total / limit) || 1;
     const startIndex = (page - 1) * limit;
@@ -121,5 +138,14 @@ export const mechanicService = {
     });
 
     return { data: locations };
+  },
+
+  async createMechanic(payload: CreateMechanicPayload): Promise<SingleMechanicResponse> {
+    const res = await apiFetch<any>("/mechanics", {
+      method: "POST",
+      body: JSON.stringify(payload),
+    });
+    const rawData = res.data || res;
+    return { data: mapRawMechanic(rawData) };
   },
 };

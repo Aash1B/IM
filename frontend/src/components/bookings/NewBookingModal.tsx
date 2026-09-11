@@ -172,6 +172,7 @@ export const NewBookingModal: React.FC<NewBookingModalProps> = ({
 
       const res = await bookingService.createBooking(payload);
       setSuccessMessage(`Booking #${res.data.bookingNumber || res.data.id.substring(0, 8).toUpperCase()} created successfully!`);
+
       setTimeout(() => {
         onBookingCreated();
         onClose();

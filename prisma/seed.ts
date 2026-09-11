@@ -1,7 +1,6 @@
 import { PrismaClient, Role, BookingStatus } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 
-
 const prisma = new PrismaClient();
 
 const REALISTIC_SERVICES = [
@@ -35,13 +34,22 @@ const REALISTIC_VEHICLES = [
 const FIRST_NAMES = [
   'Aarav', 'Vivaan', 'Aditya', 'Vihaan', 'Arjun', 'Sai', 'Reyansh', 'Ayaan', 'Krishna', 'Ishaan',
   'Shaurya', 'Rohan', 'Dhruv', 'Kabir', 'Ananya', 'Diya', 'Gauri', 'Isha', 'Kavya', 'Pooja',
-  'Priya', 'Riya', 'Sneha', 'Tanvi', 'Vikram', 'Rajesh', 'Amit', 'Sunil', 'Karan', 'Deepak',
-  'Manish', 'Rahul', 'Nikhil', 'Pankaj', 'Sanjay', 'Vikas', 'Alok', 'Mohit', 'Harish', 'Sachin'
+  'Priya', 'Riya', 'Sneha', 'Tanvi', 'Deepak', 'Manish', 'Rahul', 'Nikhil', 'Pankaj', 'Sanjay'
 ];
 
 const LAST_NAMES = [
-  'Sharma', 'Verma', 'Patel', 'Singh', 'Kumar', 'Gupta', 'Reddy', 'Mehta', 'Joshi', 'Chopra',
+  'Sharma', 'Verma', 'Patel', 'Kumar', 'Gupta', 'Reddy', 'Mehta', 'Joshi', 'Chopra',
   'Malhotra', 'Bhatia', 'Saxena', 'Deshmukh', 'Iyer', 'Nair', 'Kapoor', 'Chauhan', 'Yadav', 'Mishra'
+];
+
+const MECHANIC_FIRST_NAMES = [
+  'Vikram', 'Rajesh', 'Amit', 'Sunil', 'Karan', 'Vikas', 'Alok', 'Mohit', 'Harish', 'Sachin',
+  'Jagdish', 'Bhupender', 'Devendra', 'Manoj', 'Satish', 'Omkar', 'Gopal', 'Naresh', 'Mukesh', 'Ramesh',
+  'Suraj', 'Dinesh', 'Balwant', 'Ashok', 'Trilok'
+];
+
+const MECHANIC_LAST_NAMES = [
+  'Singh', 'Ustaad', 'Mistri', 'Rawat', 'Negi', 'Kashyap', 'Chaudhary', 'Pawar', 'Solanki', 'Goswami'
 ];
 
 function randomElement<T>(arr: T[]): T {
@@ -54,6 +62,10 @@ function randomInt(min: number, max: number): number {
 
 function randomFullName(): string {
   return `${randomElement(FIRST_NAMES)} ${randomElement(LAST_NAMES)}`;
+}
+
+function randomMechanicFullName(): string {
+  return `${randomElement(MECHANIC_FIRST_NAMES)} ${randomElement(MECHANIC_LAST_NAMES)}`;
 }
 
 function randomEmail(name: string, index: number): string {
@@ -138,7 +150,7 @@ async function main() {
 
   console.log('Seeding Certified Mechanics...');
   const mechanicsData = Array.from({ length: 25 }).map((_, i) => {
-    const name = randomFullName();
+    const name = randomMechanicFullName();
     return {
       name,
       email: `mechanic.${i + 1}@instantmechanic.com`,

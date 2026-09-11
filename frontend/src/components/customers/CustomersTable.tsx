@@ -2,7 +2,7 @@
 
 import React from "react";
 import { Customer, CustomerFilterParams, Pagination } from "@/types/customer";
-import { Search, ChevronLeft, ChevronRight, Mail, Phone, Calendar } from "lucide-react";
+import { Search, ChevronLeft, ChevronRight, Mail, Phone, Calendar, Plus } from "lucide-react";
 import { formatCurrencyINR, formatDate } from "@/lib/utils";
 
 interface CustomersTableProps {
@@ -12,6 +12,7 @@ interface CustomersTableProps {
   onFilterChange: (params: Partial<CustomerFilterParams>) => void;
   onPageChange: (page: number) => void;
   loading?: boolean;
+  onAddCustomer?: () => void;
 }
 
 export const CustomersTable: React.FC<CustomersTableProps> = ({
@@ -21,11 +22,12 @@ export const CustomersTable: React.FC<CustomersTableProps> = ({
   onFilterChange,
   onPageChange,
   loading,
+  onAddCustomer,
 }) => {
   return (
     <div className="space-y-4 sm:space-y-6">
       {/* Search Header */}
-      <div className="flex items-center justify-between bg-card p-4 sm:p-6 rounded-2xl border border-border shadow-2xs">
+      <div className="flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between bg-card p-4 sm:p-6 rounded-2xl border border-border shadow-2xs">
         <div className="relative flex-1 max-w-full lg:max-w-lg">
           <Search className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
           <input
@@ -36,6 +38,16 @@ export const CustomersTable: React.FC<CustomersTableProps> = ({
             className="w-full rounded-xl border border-border bg-secondary py-3 sm:py-3.5 pl-12 pr-5 text-base sm:text-lg font-bold text-foreground placeholder-gray-400 focus:border-[#FF5A00] focus:bg-card focus:outline-none focus:ring-2 focus:ring-[#FF5A00]/20"
           />
         </div>
+
+        {onAddCustomer && (
+          <button
+            onClick={onAddCustomer}
+            className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#FF5A00] px-5 py-3 text-sm sm:text-base font-bold text-white shadow-md hover:bg-[#e04f00] active:scale-[0.98] transition-all cursor-pointer whitespace-nowrap"
+          >
+            <Plus className="h-5 w-5" />
+            <span>Add Customer</span>
+          </button>
+        )}
       </div>
 
       {/* Customers Data Table */}

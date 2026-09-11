@@ -101,4 +101,3 @@ export async function apiFetch<T>(
     throw new CustomApiError(500, msg);
   }
 }
-

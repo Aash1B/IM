@@ -1,4 +1,4 @@
-import { apiFetch, setToken, removeToken, getToken } from "../lib/api";
+import { apiFetch, setToken, removeToken, getToken } from "@/lib/api";
 import { AuthResponse, LoginCredentials, User } from "../types/auth";
 
 

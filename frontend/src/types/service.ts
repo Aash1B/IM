@@ -16,3 +16,9 @@ export interface ServicesResponse {
 export interface SingleServiceResponse {
   data: ServiceItem;
 }
+
+export interface CreateServicePayload {
+  name: string;
+  description?: string;
+  price: number;
+}

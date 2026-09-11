@@ -1,4 +1,4 @@
-﻿import {
+import {
   Controller, Get, Post, Param, Patch, Body, Query,
   UseGuards, Request, Res,
 } from '@nestjs/common';
@@ -31,7 +31,7 @@ export class BookingsController {
 
   @Get('export')
   @ApiBearerAuth()
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(OptionalJwtAuthGuard)
   @ApiOperation({ summary: 'Export bookings to CSV based on filters' })
   async export(@Query() query: BookingQueryDto, @Res() res: Response) {
     const csv = await this.bookingsService.exportToCsv(query);

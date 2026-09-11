@@ -1,8 +1,8 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Sidebar } from "./Sidebar";
-import { TopNavbar } from "./TopNavbar";
+import { Sidebar } from "@/components/layout/Sidebar";
+import { TopNavbar } from "@/components/layout/TopNavbar";
 import { cn } from "@/lib/utils";
 
 export const AppShell: React.FC<{ children: React.ReactNode }> = ({ children }) => {

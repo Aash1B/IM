@@ -4,7 +4,7 @@ import React from "react";
 import Link from "next/link";
 import { Mechanic, MechanicFilterParams, Pagination, MechanicStatus } from "@/types/mechanic";
 import { StatusBadge } from "@/components/ui/StatusBadge";
-import { Search, Phone, Mail, CheckCircle, ChevronLeft, ChevronRight, Eye } from "lucide-react";
+import { Search, Phone, Mail, CheckCircle, ChevronLeft, ChevronRight, Eye, Plus } from "lucide-react";
 
 interface MechanicsGridProps {
   mechanics: Mechanic[];
@@ -13,15 +13,17 @@ interface MechanicsGridProps {
   onFilterChange?: (params: Partial<MechanicFilterParams>) => void;
   onPageChange?: (page: number) => void;
   loading?: boolean;
+  onAddMechanic?: () => void;
 }
 
 export const MechanicsGrid: React.FC<MechanicsGridProps> = ({
   mechanics = [],
-  pagination = { page: 1, limit: 10, total: mechanics.length, totalPages: 1 },
+  pagination = { page: 1, limit: 9, total: mechanics.length, totalPages: 1 },
   params = {},
   onFilterChange = () => {},
   onPageChange = () => {},
   loading,
+  onAddMechanic,
 }) => {
   return (
     <div className="space-y-4 sm:space-y-6">
@@ -50,6 +52,16 @@ export const MechanicsGrid: React.FC<MechanicsGridProps> = ({
           <option value="BUSY">Busy</option>
           <option value="OFFLINE">Offline</option>
         </select>
+
+        {onAddMechanic && (
+          <button
+            onClick={onAddMechanic}
+            className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#F98513] px-5 py-2.5 sm:py-3 text-sm sm:text-base font-bold text-white shadow-md hover:bg-[#e0750e] active:scale-[0.98] transition-all cursor-pointer whitespace-nowrap"
+          >
+            <Plus className="h-5 w-5" />
+            <span>Add Mechanic</span>
+          </button>
+        )}
       </div>
 
       {/* Grid of Mechanic Cards */}

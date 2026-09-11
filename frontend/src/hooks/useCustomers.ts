@@ -8,7 +8,7 @@ export function useCustomers(initialParams: CustomerFilterParams = {}) {
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [pagination, setPagination] = useState<Pagination>({
     page: 1,
-    limit: 10,
+    limit: 9,
     total: 0,
     totalPages: 1,
   });

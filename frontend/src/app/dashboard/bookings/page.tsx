@@ -8,24 +8,25 @@ import { TableSkeleton } from "@/components/ui/LoadingSkeleton";
 import { ErrorState } from "@/components/ui/ErrorState";
 
 export default function BookingsPage() {
-  const [params, setParams] = useState({
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const {
+    bookings,
+    pagination,
+    params,
+    loading,
+    error,
+    updateFilters,
+    setPage,
+    refresh,
+    getExportUrl,
+  } = useBookings({
     page: 1,
     limit: 10,
     search: "",
     sortBy: "createdAt",
     sortOrder: "desc" as const,
   });
-  const [isModalOpen, setIsModalOpen] = useState(false);
-
-  const { bookings, pagination, loading, error, refresh, getExportUrl } = useBookings(params);
-
-  const handleFilterChange = (newParams: any) => {
-    setParams((prev) => ({ ...prev, ...newParams, page: 1 }));
-  };
-
-  const handlePageChange = (newPage: number) => {
-    setParams((prev) => ({ ...prev, page: newPage }));
-  };
 
   if (error) {
     return <ErrorState message={error} onRetry={refresh} />;
@@ -41,8 +42,8 @@ export default function BookingsPage() {
           bookings={bookings}
           pagination={pagination}
           params={params}
-          onFilterChange={handleFilterChange}
-          onPageChange={handlePageChange}
+          onFilterChange={updateFilters}
+          onPageChange={setPage}
           exportUrl={getExportUrl()}
           loading={loading}
           onNewBooking={() => setIsModalOpen(true)}

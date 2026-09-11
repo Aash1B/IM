@@ -1,4 +1,4 @@
-import { apiFetch } from "../lib/api";
+import { apiFetch } from "@/lib/api";
 import { DashboardResponse, AnalyticsResponse } from "../types/dashboard";
 
 
