@@ -1,7 +1,7 @@
 import { Controller, Get, UseGuards } from '@nestjs/common';
 import { Throttle } from '@nestjs/throttler';
 import { DashboardService } from './dashboard.service.js';
-import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard.js';
+import { JwtAuthGuard } from '../auth/guards/optional-jwt-auth.guard.js';
 
 @UseGuards(JwtAuthGuard)
 @Controller('dashboard')

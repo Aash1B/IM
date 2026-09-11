@@ -63,15 +63,24 @@ export async function apiFetch<T>(
     const data = await response.json().catch(() => null);
 
     if (!response.ok) {
-      let errorMsg = "Request failed";
+      let errorMsg = `Request failed (${response.status})`;
       if (typeof data?.message === "string") {
         errorMsg = data.message;
       } else if (Array.isArray(data?.message)) {
         errorMsg = data.message.join(", ");
       } else if (data?.message && typeof data.message === "object") {
-        errorMsg = data.message.message || JSON.stringify(data.message);
+        const inner = data.message;
+        if (typeof inner.message === "string") {
+          errorMsg = inner.message;
+        } else if (Array.isArray(inner.message)) {
+          errorMsg = inner.message.join(", ");
+        } else {
+          errorMsg = JSON.stringify(inner);
+        }
+      } else if (typeof data?.error === "string") {
+        errorMsg = `${data.error} (${response.status})`;
       } else if (response.statusText) {
-        errorMsg = response.statusText;
+        errorMsg = `${response.statusText} (${response.status})`;
       }
 
       if (response.status === 401 && typeof window !== "undefined" && window.location.pathname !== "/login") {
@@ -92,3 +101,4 @@ export async function apiFetch<T>(
     throw new CustomApiError(500, msg);
   }
 }
+

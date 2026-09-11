@@ -84,3 +84,20 @@ export interface SingleBookingResponse {
 export interface UpdateBookingStatusRequest {
   status: BookingStatus;
 }
+
+export interface CreateBookingPayload {
+  serviceId: string;
+  customerId?: string;
+  customerName?: string;
+  customerEmail?: string;
+  customerPhone?: string;
+  vehicleId?: string;
+  vehicleMake?: string;
+  vehicleModel?: string;
+  vehicleYear?: number;
+  vehicleLicensePlate?: string;
+  mechanicId?: string;
+  bookingDate?: string;
+  amount?: number;
+  status?: BookingStatus;
+}

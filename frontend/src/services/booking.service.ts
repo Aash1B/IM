@@ -1,14 +1,12 @@
-import { apiFetch, API_BASE_URL } from "../lib/api";
+﻿import { apiFetch, API_BASE_URL } from "../lib/api";
 import {
   BookingsResponse,
   SingleBookingResponse,
   BookingFilterParams,
   BookingStatus,
   Booking,
+  CreateBookingPayload,
 } from "../types/booking";
-
-
-// Persistent mock state in memory for live status updates during dev session
 
 function mapRawBooking(b: any): Booking {
   if (!b) return b;
@@ -52,8 +50,6 @@ function mapRawBooking(b: any): Booking {
 
 export const bookingService = {
   async getBookings(params: BookingFilterParams = {}): Promise<BookingsResponse> {
-    
-
     const queryParams = new URLSearchParams();
     Object.entries(params).forEach(([key, value]) => {
       if (value !== undefined && value !== "") {
@@ -77,20 +73,25 @@ export const bookingService = {
   },
 
   async getBookingById(id: string): Promise<SingleBookingResponse> {
-    
-
     const res = await apiFetch<any>(`/bookings/${id}`);
     const rawData = res.data || res;
     return { data: mapRawBooking(rawData) };
   },
 
   async updateBookingStatus(id: string, status: BookingStatus): Promise<SingleBookingResponse> {
-    
-
     return apiFetch<SingleBookingResponse>(`/bookings/${id}/status`, {
       method: "PATCH",
       body: JSON.stringify({ status }),
     });
+  },
+
+  async createBooking(payload: CreateBookingPayload): Promise<SingleBookingResponse> {
+    const res = await apiFetch<any>("/bookings", {
+      method: "POST",
+      body: JSON.stringify(payload),
+    });
+    const rawData = res.data || res;
+    return { data: mapRawBooking(rawData) };
   },
 
   getExportUrl(params: BookingFilterParams = {}): string {

@@ -14,21 +14,27 @@ import { Server, Socket } from 'socket.io';
 })
 export class EventsGateway {
   @WebSocketServer()
-  server!: Server;
+  server?: Server;
 
-  // Emit booking updated event to all connected clients
+  // Emit booking updated event to all connected clients safely
   emitBookingUpdated(bookingId: string, data: any) {
-    this.server.emit('booking.updated', { bookingId, ...data });
+    if (this.server) {
+      this.server.emit('booking.updated', { bookingId, ...data });
+    }
   }
 
-  // Emit notification to all connected clients
+  // Emit notification to all connected clients safely
   emitNotification(notification: any) {
-    this.server.emit('notification', notification);
+    if (this.server) {
+      this.server.emit('notification', notification);
+    }
   }
 
-  // Emit mechanic location updated
+  // Emit mechanic location updated safely
   emitMechanicLocationUpdated(mechanicId: string, location: { latitude: number; longitude: number }) {
-    this.server.emit('mechanic.location.updated', { mechanicId, ...location });
+    if (this.server) {
+      this.server.emit('mechanic.location.updated', { mechanicId, ...location });
+    }
   }
 
   @SubscribeMessage('join')

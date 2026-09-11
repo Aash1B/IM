@@ -1,6 +1,6 @@
 import { PrismaClient, Role, BookingStatus } from '@prisma/client';
-import { faker } from '@faker-js/faker';
 import * as bcrypt from 'bcrypt';
+
 
 const prisma = new PrismaClient();
 
@@ -32,13 +32,55 @@ const REALISTIC_VEHICLES = [
   { make: 'BMW', models: ['3 Series', 'X3'] },
 ];
 
-function getRandomLicensePlate() {
+const FIRST_NAMES = [
+  'Aarav', 'Vivaan', 'Aditya', 'Vihaan', 'Arjun', 'Sai', 'Reyansh', 'Ayaan', 'Krishna', 'Ishaan',
+  'Shaurya', 'Rohan', 'Dhruv', 'Kabir', 'Ananya', 'Diya', 'Gauri', 'Isha', 'Kavya', 'Pooja',
+  'Priya', 'Riya', 'Sneha', 'Tanvi', 'Vikram', 'Rajesh', 'Amit', 'Sunil', 'Karan', 'Deepak',
+  'Manish', 'Rahul', 'Nikhil', 'Pankaj', 'Sanjay', 'Vikas', 'Alok', 'Mohit', 'Harish', 'Sachin'
+];
+
+const LAST_NAMES = [
+  'Sharma', 'Verma', 'Patel', 'Singh', 'Kumar', 'Gupta', 'Reddy', 'Mehta', 'Joshi', 'Chopra',
+  'Malhotra', 'Bhatia', 'Saxena', 'Deshmukh', 'Iyer', 'Nair', 'Kapoor', 'Chauhan', 'Yadav', 'Mishra'
+];
+
+function randomElement<T>(arr: T[]): T {
+  return arr[Math.floor(Math.random() * arr.length)];
+}
+
+function randomInt(min: number, max: number): number {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+function randomFullName(): string {
+  return `${randomElement(FIRST_NAMES)} ${randomElement(LAST_NAMES)}`;
+}
+
+function randomEmail(name: string, index: number): string {
+  const clean = name.toLowerCase().replace(/\s+/g, '.');
+  return `${clean}${index}@example.com`;
+}
+
+function randomPhoneNumber(): string {
+  const prefixes = ['98', '99', '97', '96', '95', '91', '88', '87', '70'];
+  const prefix = randomElement(prefixes);
+  const rest = String(randomInt(10000000, 99999999));
+  return `+91 ${prefix}${rest.substring(0, 8)}`;
+}
+
+function getRandomLicensePlate(): string {
   const states = ['DL', 'MH', 'KA', 'HR', 'UP', 'TS', 'GJ'];
-  const state = faker.helpers.arrayElement(states);
-  const code = String(faker.number.int({ min: 1, max: 99 })).padStart(2, '0');
-  const letters = faker.string.alpha({ length: 2, casing: 'upper' });
-  const digits = String(faker.number.int({ min: 1000, max: 9999 }));
+  const state = randomElement(states);
+  const code = String(randomInt(1, 99)).padStart(2, '0');
+  const letters = String.fromCharCode(65 + randomInt(0, 25)) + String.fromCharCode(65 + randomInt(0, 25));
+  const digits = String(randomInt(1000, 9999));
   return `${state}-${code}-${letters}-${digits}`;
+}
+
+function randomDateWithinDays(days: number): Date {
+  const now = Date.now();
+  const past = now - randomInt(0, days * 24 * 60 * 60 * 1000);
+  return new Date(past);
 }
 
 async function main() {
@@ -60,7 +102,7 @@ async function main() {
   console.log('Seeding Users (Admin & Operations)...');
   const hashedPassword = await bcrypt.hash('password123', 10);
   const usersData = Array.from({ length: 50 }).map((_, i) => ({
-    email: i === 0 ? 'admin@instantmechanic.com' : faker.internet.email().toLowerCase(),
+    email: i === 0 ? 'admin@instantmechanic.com' : `ops.${i}@instantmechanic.com`,
     password: hashedPassword,
     role: i === 0 ? Role.ADMIN : Role.OPERATIONS,
   }));
@@ -68,35 +110,41 @@ async function main() {
   const users = await prisma.user.findMany();
 
   console.log('Seeding Customers...');
-  const customersData = Array.from({ length: 60 }).map(() => ({
-    name: faker.person.fullName(),
-    email: faker.internet.email().toLowerCase(),
-    phone: faker.phone.number(),
-  }));
+  const customersData = Array.from({ length: 60 }).map((_, i) => {
+    const name = randomFullName();
+    return {
+      name,
+      email: randomEmail(name, i + 1),
+      phone: randomPhoneNumber(),
+    };
+  });
   await prisma.customer.createMany({ data: customersData });
   const customers = await prisma.customer.findMany();
 
   console.log('Seeding Vehicles...');
   const vehiclesData = Array.from({ length: 120 }).map(() => {
-    const brand = faker.helpers.arrayElement(REALISTIC_VEHICLES);
-    const model = faker.helpers.arrayElement(brand.models);
+    const brand = randomElement(REALISTIC_VEHICLES);
+    const model = randomElement(brand.models);
     return {
       make: brand.make,
       model,
-      year: faker.number.int({ min: 2016, max: 2025 }),
+      year: randomInt(2016, 2025),
       licensePlate: getRandomLicensePlate(),
-      customerId: faker.helpers.arrayElement(customers).id,
+      customerId: randomElement(customers).id,
     };
   });
   await prisma.vehicle.createMany({ data: vehiclesData });
   const vehicles = await prisma.vehicle.findMany();
 
   console.log('Seeding Certified Mechanics...');
-  const mechanicsData = Array.from({ length: 25 }).map(() => ({
-    name: faker.person.fullName(),
-    email: faker.internet.email().toLowerCase(),
-    phone: faker.phone.number(),
-  }));
+  const mechanicsData = Array.from({ length: 25 }).map((_, i) => {
+    const name = randomFullName();
+    return {
+      name,
+      email: `mechanic.${i + 1}@instantmechanic.com`,
+      phone: randomPhoneNumber(),
+    };
+  });
   await prisma.mechanic.createMany({ data: mechanicsData });
   const mechanics = await prisma.mechanic.findMany();
 
@@ -118,17 +166,17 @@ async function main() {
   ];
 
   for (let i = 0; i < 50; i++) {
-    const customer = faker.helpers.arrayElement(customers);
+    const customer = randomElement(customers);
     const customerVehicles = vehicles.filter(v => v.customerId === customer.id);
     const vehicle = customerVehicles.length > 0 
-      ? faker.helpers.arrayElement(customerVehicles) 
-      : faker.helpers.arrayElement(vehicles);
+      ? randomElement(customerVehicles) 
+      : randomElement(vehicles);
 
-    const service = faker.helpers.arrayElement(services);
-    const currentStatusIndex = faker.number.int({ min: 0, max: statuses.length - 1 });
+    const service = randomElement(services);
+    const currentStatusIndex = randomInt(0, statuses.length - 1);
     const currentStatus = statuses[currentStatusIndex];
-    const mechanic = currentStatusIndex > 0 ? faker.helpers.arrayElement(mechanics) : null;
-    const bookingDate = faker.date.recent({ days: 45 });
+    const mechanic = currentStatusIndex > 0 ? randomElement(mechanics) : null;
+    const bookingDate = randomDateWithinDays(45);
 
     const booking = await prisma.booking.create({
       data: {
@@ -155,9 +203,9 @@ async function main() {
     if (Math.random() > 0.5) {
       await prisma.notification.create({
         data: {
-          userId: faker.helpers.arrayElement(users).id,
+          userId: randomElement(users).id,
           message: `Update on booking #${booking.id.substring(0, 8).toUpperCase()}: Status updated to ${currentStatus.replace(/_/g, ' ')}`,
-          read: faker.datatype.boolean(),
+          read: Math.random() > 0.5,
         }
       });
     }
@@ -165,7 +213,7 @@ async function main() {
     await prisma.bookingStatusHistory.createMany({ data: historyData });
   }
 
-  console.log('Seeding finished successfully with realistic automotive data!');
+  console.log('Seeding finished successfully with realistic automotive data (zero faker.js dependency)!');
 }
 
 main()

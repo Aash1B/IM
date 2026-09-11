@@ -1,4 +1,4 @@
-import {
+﻿import {
   Injectable,
   NotFoundException,
   BadRequestException,
@@ -7,6 +7,7 @@ import { PrismaService } from '../prisma/prisma.service.js';
 import { BookingStatus, Prisma } from '@prisma/client';
 import { BookingQueryDto } from './dto/booking-query.dto.js';
 import { UpdateBookingStatusDto } from './dto/update-booking-status.dto.js';
+import { CreateBookingDto } from './dto/create-booking.dto.js';
 import { isValidTransition } from './booking-transitions.js';
 import { EventsGateway } from '../events/events.gateway.js';
 import { EmailService } from '../notifications/email.service.js';
@@ -21,19 +22,9 @@ export class BookingsService {
 
   async findAll(query: BookingQueryDto) {
     const {
-      search,
-      status,
-      mechanicId,
-      serviceId,
-      customerId,
-      startDate,
-      endDate,
-      minAmount,
-      maxAmount,
-      sortBy = 'createdAt',
-      sortOrder = 'desc',
-      page = '1',
-      limit = '10',
+      search, status, mechanicId, serviceId, customerId,
+      startDate, endDate, minAmount, maxAmount,
+      sortBy = 'createdAt', sortOrder = 'desc', page = '1', limit = '10',
     } = query;
 
     const pageNum = parseInt(page);
@@ -41,7 +32,6 @@ export class BookingsService {
     const skip = (pageNum - 1) * limitNum;
 
     const where: Prisma.BookingWhereInput = {};
-
     if (status) where.status = status as BookingStatus;
     if (mechanicId) where.mechanicId = mechanicId;
     if (serviceId) where.serviceId = serviceId;
@@ -110,6 +100,7 @@ export class BookingsService {
     if (mechanicId) where.mechanicId = mechanicId;
     if (serviceId) where.serviceId = serviceId;
     if (customerId) where.customerId = customerId;
+
     if (startDate || endDate) {
       where.bookingDate = {};
       if (startDate) where.bookingDate.gte = new Date(startDate);
@@ -213,7 +204,6 @@ export class BookingsService {
       );
     }
 
-    // ASSIGNED requires a mechanic
     if (newStatus === BookingStatus.ASSIGNED && !dto.mechanicId && !booking.mechanicId) {
       throw new BadRequestException('A mechanicId is required when assigning a booking');
     }
@@ -242,7 +232,6 @@ export class BookingsService {
         },
       });
 
-      // Find any user to send notification to (in production this would target specific users)
       const adminUser = await tx.user.findFirst();
       if (adminUser) {
         await tx.notification.create({
@@ -256,7 +245,6 @@ export class BookingsService {
       return result;
     });
 
-    // Emit WebSocket events AFTER the transaction is committed
     this.eventsGateway.emitBookingUpdated(id, {
       status: newStatus,
       booking: updatedBooking,
@@ -266,16 +254,135 @@ export class BookingsService {
       bookingId: id,
     });
 
-    // Send email notification to customer
-    if (updatedBooking.customer?.email) {
-      this.emailService.sendEmail(
-        updatedBooking.customer.email,
-        `Booking Update: ${newStatus}`,
-        `Hello ${updatedBooking.customer.name},\n\nYour booking for ${updatedBooking.service?.name} is now ${newStatus}.`,
-        `<p>Hello ${updatedBooking.customer.name},</p><p>Your booking for <b>${updatedBooking.service?.name}</b> is now <b>${newStatus}</b>.</p>`
+    return updatedBooking;
+  }
+
+  async create(dto: CreateBookingDto, changedByUserId?: string) {
+    // 1. Validate service
+    const service = await this.prisma.service.findUnique({
+      where: { id: dto.serviceId },
+    });
+    if (!service) {
+      throw new NotFoundException(`Service with ID ${dto.serviceId} not found`);
+    }
+
+    // 2. Resolve Customer
+    let customer: any = null;
+    if (dto.customerId) {
+      customer = await this.prisma.customer.findUnique({
+        where: { id: dto.customerId },
+      });
+      if (!customer) {
+        throw new NotFoundException(`Customer with ID ${dto.customerId} not found`);
+      }
+    } else if (dto.customerEmail) {
+      const email = dto.customerEmail.toLowerCase().trim();
+      customer = await this.prisma.customer.findUnique({
+        where: { email },
+      });
+      if (!customer) {
+        customer = await this.prisma.customer.create({
+          data: {
+            name: dto.customerName || 'Car Owner',
+            email,
+            phone: dto.customerPhone || null,
+          },
+        });
+      }
+    } else {
+      throw new BadRequestException(
+        'Customer identifier required: provide either customerId or customerEmail',
       );
     }
 
-    return updatedBooking;
+    // 3. Resolve Vehicle
+    let vehicle: any = null;
+    if (dto.vehicleId) {
+      vehicle = await this.prisma.vehicle.findUnique({
+        where: { id: dto.vehicleId },
+      });
+      if (!vehicle) {
+        throw new NotFoundException(`Vehicle with ID ${dto.vehicleId} not found`);
+      }
+    } else {
+      vehicle = await this.prisma.vehicle.create({
+        data: {
+          make: dto.vehicleMake || 'Automobile',
+          model: dto.vehicleModel || 'Standard',
+          year: dto.vehicleYear || new Date().getFullYear(),
+          licensePlate: dto.vehicleLicensePlate || null,
+          customerId: customer.id,
+        },
+      });
+    }
+
+    // 4. Validate mechanic if provided
+    if (dto.mechanicId) {
+      const mechanic = await this.prisma.mechanic.findUnique({
+        where: { id: dto.mechanicId },
+      });
+      if (!mechanic) {
+        throw new NotFoundException(`Mechanic with ID ${dto.mechanicId} not found`);
+      }
+    }
+
+    const bookingStatus: BookingStatus =
+      dto.status || (dto.mechanicId ? BookingStatus.ASSIGNED : BookingStatus.PENDING);
+    const bookingAmount = dto.amount !== undefined ? dto.amount : service.price;
+    const bookingDate = dto.bookingDate ? new Date(dto.bookingDate) : new Date();
+
+    // 5. Execute transactional creation
+    const createdBooking = await this.prisma.$transaction(async (tx) => {
+      const booking = await tx.booking.create({
+        data: {
+          customerId: customer.id,
+          vehicleId: vehicle.id,
+          serviceId: service.id,
+          mechanicId: dto.mechanicId || null,
+          status: bookingStatus,
+          amount: bookingAmount,
+          bookingDate,
+        },
+        include: {
+          customer: true,
+          vehicle: true,
+          service: true,
+          mechanic: true,
+        },
+      });
+
+      await tx.bookingStatusHistory.create({
+        data: {
+          bookingId: booking.id,
+          fromStatus: null,
+          toStatus: bookingStatus,
+          changedBy: changedByUserId || 'WEBSITE_BOOKING',
+        },
+      });
+
+      const adminUser = await tx.user.findFirst();
+      if (adminUser) {
+        await tx.notification.create({
+          data: {
+            userId: adminUser.id,
+            message: `New booking #${booking.id.substring(0, 8).toUpperCase()} received: ${customer.name} - ${service.name}`,
+          },
+        });
+      }
+
+      return booking;
+    });
+
+    // 6. Broadcast Real-time WebSocket events
+    this.eventsGateway.emitBookingUpdated(createdBooking.id, {
+      status: bookingStatus,
+      booking: createdBooking,
+    });
+    this.eventsGateway.emitNotification({
+      message: `New booking created: #${createdBooking.id.substring(0, 8).toUpperCase()} for ${customer.name}`,
+      bookingId: createdBooking.id,
+    });
+
+    return createdBooking;
   }
 }

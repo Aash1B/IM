@@ -10,6 +10,13 @@ export interface Customer {
   totalBookings: number;
   totalSpent: number;
   createdAt: string;
+  vehicles?: Array<{
+    id: string;
+    make: string;
+    model: string;
+    registrationNumber?: string;
+    year?: number;
+  }>;
 }
 
 export interface CustomerFilterParams {

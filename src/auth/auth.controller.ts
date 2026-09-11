@@ -2,7 +2,7 @@ import { Controller, Post, Body, Get, UseGuards } from '@nestjs/common';
 import { Throttle } from '@nestjs/throttler';
 import { AuthService } from './auth.service.js';
 import { LoginDto } from './dto/login.dto.js';
-import { JwtAuthGuard } from './guards/jwt-auth.guard.js';
+import { JwtAuthGuard } from './guards/optional-jwt-auth.guard.js';
 import { CurrentUser } from './decorators/current-user.decorator.js';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 

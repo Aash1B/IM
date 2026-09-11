@@ -12,6 +12,7 @@ import {
   Clock,
   LayoutList,
   Table as TableIcon,
+  Plus,
 } from "lucide-react";
 import { Booking, BookingFilterParams, Pagination, BookingStatus } from "@/types/booking";
 import { StatusBadge } from "@/components/ui/StatusBadge";
@@ -25,6 +26,7 @@ interface BookingsTableProps {
   onPageChange: (page: number) => void;
   exportUrl?: string;
   loading?: boolean;
+  onNewBooking?: () => void;
 }
 
 export const BookingsTable: React.FC<BookingsTableProps> = ({
@@ -35,6 +37,7 @@ export const BookingsTable: React.FC<BookingsTableProps> = ({
   onPageChange,
   exportUrl,
   loading,
+  onNewBooking,
 }) => {
   const [viewMode, setViewMode] = useState<"card" | "table">("card");
 
@@ -48,7 +51,7 @@ export const BookingsTable: React.FC<BookingsTableProps> = ({
 
   return (
     <div className="space-y-6">
-      {/* Filter Bar Header inspired by SehatSetu layout */}
+      {/* Filter Bar Header */}
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between bg-card bg-brand-grid dark:bg-dark-grid p-5 rounded-2xl border border-border shadow-2xs">
         {/* Search Input */}
         <div className="relative flex-1 max-w-lg">
@@ -125,6 +128,17 @@ export const BookingsTable: React.FC<BookingsTableProps> = ({
               Export
             </a>
           )}
+
+          {/* New Booking Button */}
+          {onNewBooking && (
+            <button
+              onClick={onNewBooking}
+              className="inline-flex items-center gap-2 rounded-xl bg-[#F98513] px-5 py-3 text-sm md:text-base font-bold text-white shadow-md hover:bg-[#e0750e] active:scale-[0.98] transition-all cursor-pointer"
+            >
+              <Plus className="h-5 w-5" />
+              <span>New Booking</span>
+            </button>
+          )}
         </div>
       </div>
 
@@ -150,7 +164,7 @@ export const BookingsTable: React.FC<BookingsTableProps> = ({
                   key={b.id}
                   className="flex flex-col md:flex-row md:items-center justify-between gap-4 rounded-2xl border border-border bg-card bg-brand-grid dark:bg-dark-grid p-5 md:p-6 shadow-2xs hover:border-[#F98513]/40 hover:shadow-md transition-all group"
                 >
-                  {/* Left: Circular Dark Avatar Badge + Vertical Line Divider + Name + Status Badge */}
+                  {/* Left: Avatar + Divider + Details */}
                   <div className="flex items-center gap-4">
                     <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#171512] text-white font-black text-base shadow-2xs shrink-0">
                       {customerInitials}
@@ -175,7 +189,7 @@ export const BookingsTable: React.FC<BookingsTableProps> = ({
                     </div>
                   </div>
 
-                  {/* Right: Date/Time + Amount + Action Buttons */}
+                  {/* Right: Date/Time + Amount + Action Button */}
                   <div className="flex items-center gap-4 border-t md:border-t-0 border-secondary pt-3 md:pt-0 justify-between md:justify-end">
                     <div className="flex items-center gap-2 text-xs md:text-sm font-medium text-muted-foreground">
                       <Clock className="h-4 w-4 text-muted-foreground" />
@@ -244,7 +258,7 @@ export const BookingsTable: React.FC<BookingsTableProps> = ({
                   <td className="py-5 px-6 text-xs md:text-sm">{formatDate(b.scheduledAt)}</td>
                   <td className="py-5 px-6 text-right">
                     <Link
-                      href={`/dashboard/bookings/${b.id}`}
+                     href={`/dashboard/bookings/${b.id}`}
                       className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-border text-foreground hover:bg-[#F98513] hover:text-white transition-colors"
                     >
                       <Eye className="h-5 w-5" />

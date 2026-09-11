@@ -1,8 +1,9 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
+import Link from "next/link";
 import { useAuth } from "@/hooks/useAuth";
-import { ArrowRight, RefreshCw, KeyRound, Mail } from "lucide-react";
+import { ArrowRight, RefreshCw, KeyRound, Mail, Wrench } from "lucide-react";
 
 function ShaderBackground() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -327,6 +328,17 @@ export default function LoginPage() {
                 </button>
               </>
             )}
+          </div>
+
+          {/* Customer Online Booking Link */}
+          <div className="pt-3 border-t border-slate-200 text-center">
+            <Link
+              href="/book"
+              className="inline-flex items-center gap-2 text-xs sm:text-sm font-bold text-[#F95413] hover:underline"
+            >
+              <Wrench className="h-4 w-4" />
+              <span>Looking for car repair? Book online as a customer →</span>
+            </Link>
           </div>
         </div>
       </div>
