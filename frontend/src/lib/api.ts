@@ -1,5 +1,20 @@
+export function getApiBaseUrl(): string {
+  const envUrl = process.env.NEXT_PUBLIC_API_URL;
+  if (typeof window !== "undefined" && window.location.protocol === "https:") {
+    if (envUrl && envUrl.startsWith("http://") && !envUrl.includes("localhost")) {
+      return "/api/v1";
+    }
+  }
+  return envUrl || "/api/v1";
+}
+
 export const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api/v1";
+  typeof window !== "undefined" &&
+  window.location.protocol === "https:" &&
+  process.env.NEXT_PUBLIC_API_URL?.startsWith("http://") &&
+  !process.env.NEXT_PUBLIC_API_URL?.includes("localhost")
+    ? "/api/v1"
+    : process.env.NEXT_PUBLIC_API_URL || "/api/v1";
 
 export interface ApiError {
   statusCode: number;
@@ -49,10 +64,12 @@ export async function apiFetch<T>(
   };
 
   if (token) {
-    headers["Authorization"] = `Bearer ${token}`;
+    headers["Authorization"] = Bearer ${token};
   }
 
-  const url = endpoint.startsWith("http") ? endpoint : `${API_BASE_URL}${endpoint}`;
+  const baseUrl = getApiBaseUrl().replace(/\/+$/, "");
+  const cleanEndpoint = endpoint.startsWith("/") ? endpoint : /${endpoint};
+  const url = endpoint.startsWith("http") ? endpoint : ${baseUrl}${cleanEndpoint};
 
   try {
     const response = await fetch(url, {
@@ -63,7 +80,7 @@ export async function apiFetch<T>(
     const data = await response.json().catch(() => null);
 
     if (!response.ok) {
-      let errorMsg = `Request failed (${response.status})`;
+      let errorMsg = Request failed (${response.status});
       if (typeof data?.message === "string") {
         errorMsg = data.message;
       } else if (Array.isArray(data?.message)) {
@@ -78,9 +95,9 @@ export async function apiFetch<T>(
           errorMsg = JSON.stringify(inner);
         }
       } else if (typeof data?.error === "string") {
-        errorMsg = `${data.error} (${response.status})`;
+        errorMsg = ${data.error} (${response.status});
       } else if (response.statusText) {
-        errorMsg = `${response.statusText} (${response.status})`;
+        errorMsg = ${response.statusText} (${response.status});
       }
 
       if (response.status === 401 && typeof window !== "undefined" && window.location.pathname !== "/login") {
