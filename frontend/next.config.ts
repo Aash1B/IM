@@ -12,7 +12,7 @@ const nextConfig: NextConfig = {
     return [
       {
         source: "/api/:path*",
-        destination: ${BACKEND_URL.replace(/\/+$/, "")}/api/:path*,
+        destination: BACKEND_URL.replace(/\/+$/, "") + "/api/:path*",
       },
     ];
   },
@@ -24,3 +24,4 @@ const nextConfig: NextConfig = {
 };
 
 export default nextConfig;
+
